@@ -8,6 +8,7 @@
 using namespace std;
 
 void decisionTree();
+void balanceCheck();
 void goAgain();
 void hackedTransfer(int& x, int& y);
 void normalTransfer(int x, int y);
@@ -15,11 +16,130 @@ int userAmount();
 string userChoice();
 string usersChoice;
 bool checkAgain = false;
+bool checkAgain1 = false;
 bool playAgain = true;
 
-int checkAmount = 0;
-int joesAmount = 0;
-int terrorAmount = 0;
+int preJoe = 0; //needed for comparison
+int averageJoe = 0; //needed for comparison
+int preExec = 0; //needed for comparison
+int execAmount = 0; //needed for comparison
+int temp1 = 0; //for adding onto existing values of averageJoe and execAmount
+int counter = 0; //for determining welcome message
+
+
+void balanceCheck()
+{
+	cout << "Do you want to check your balance then? Y/N: ";
+	userChoice();
+
+	if (execAmount == 0 && usersChoice == "Y" || execAmount == 0 && usersChoice == "YES") //only activates if execAmount actually equals zero
+	{
+		execAmount = 0;
+		cout << "\n\nYou have " << execAmount << " in your account\n"; SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 4);
+		cout << "You might want to add money before your account is closed\n\n"; SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 2);
+		checkAgain = false;
+		checkAgain1 = true;
+		system("pause");
+	}
+
+	else if (execAmount > 0 && usersChoice == "Y" || execAmount > 0 && usersChoice == "YES")
+		//should hit this first and never hit again (unless program restart obviously)
+	{
+		
+		cout << "You have " << execAmount << " in your account\n\n";
+		hackedTransfer(averageJoe, execAmount);
+		checkAgain = false;
+		checkAgain1 = true;
+		playAgain = true;
+		system("pause");
+	}
+
+	else if (usersChoice == "N" || usersChoice == "NO") //leaves program
+	{
+		cout << "\nAll right. Have a good day and thanks for doing business with E-Corp!\n\n";
+		checkAgain = false;
+		checkAgain1 = false;
+		playAgain = true;
+	}
+	else //informs user that their choice was invalid
+	{
+		SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 4); //sets color for text to red
+		cout << "I am sorry I do not understand your command" << endl; SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 2); //resets to green
+		system("pause");
+		checkAgain = true;
+	}
+}
+
+void decisionTree()
+{
+	do
+	{
+		if (counter == 0)
+		{
+			system("cls");
+			cout << "Welcome to E-Corp Banking\nWould you like to transfer funds? Y/N: "; //welcome message
+		}
+
+		else if (counter > 0)
+		{
+			system("cls");
+			cout << "Welcome to E-Corp Banking\nWould you care to transfer more funds? Y/N: "; //Query whether to transfer more or not
+		}
+
+		userChoice();
+
+		if (averageJoe > 0 && usersChoice == "Y" || averageJoe > 0 && usersChoice == "YES") 
+			//should apply after first balanceCheck
+			//also deceptive to the end user by giving false values and making them think it was weird glitch.
+		{
+			cout << "How much would you like to transfer: "; SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 3); //sets color for text only to aqua
+			cin >> temp1; SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 2);
+			averageJoe = temp1 + averageJoe;
+			cout << "Your account balance is at " << averageJoe << "\n\n";
+			checkAgain1 = true;
+			system("pause");
+		}
+
+		else if (execAmount == 0 && usersChoice == "Y" || execAmount == 0 && usersChoice == "YES") //always hits this first
+		{
+			cout << "How much would you like to transfer: "; SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 3); //sets color for text only to aqua
+			cin >> execAmount; SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 2);
+			cout << "Your account balance is now at " << execAmount << "\n\n";
+			++counter;
+			checkAgain1 = true;
+			system("pause");
+		}
+
+		else if (execAmount > 0 && usersChoice == "Y" || execAmount > 0 && usersChoice == "YES") //immediately hits this after putting in initial amount
+		{
+			cout << "How much would you like to transfer: "; SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 3); //sets color for text only to aqua
+			cin >> temp1; SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 2);
+			execAmount = execAmount + temp1;
+			preExec = execAmount;
+			cout << "Your account balance is now at " << execAmount << "\n\n"; //for debugging
+			
+			checkAgain1 = true;
+			system("pause");
+		}
+
+		else if (usersChoice == "N" || usersChoice == "NO")
+		{
+			do
+			{
+				balanceCheck();
+			} while (checkAgain);
+		}
+		/*
+		else //informs user that their choice was invalid
+		{
+			SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 4); //sets color for text to red
+			cout << "\nI am sorry I do not understand your command" << endl; SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 2); //resets to green
+			system("pause");
+			checkAgain = true;
+		} couldn't get this error catch to work properly
+		*/
+	} while (checkAgain1);
+}
 
 void goAgain() // Replay Loop Confirmation
 {
@@ -27,7 +147,7 @@ void goAgain() // Replay Loop Confirmation
 	{
 		do
 		{
-			cout << "\n\nWant to go Again Y/N: ";
+			cout << "\n\nWant to initialize another simulation? Y/N: ";
 			userChoice();
 
 			if (usersChoice == "YES" || usersChoice == "Y")
@@ -55,20 +175,20 @@ void goAgain() // Replay Loop Confirmation
 
 	else if (playAgain == false) //triggered if playAgain is false when reaching this loop
 	{
-		cout << "\n\nThanks for playing.\n\n";
+		cout << "\n\nThanks for using E-Corp Banking.\n\n";
 		system("pause");
 	}
 }
 
 
-void hackedTransfer(int& x, int& y) //Actually going to Joe's Coffee Shop.
+void hackedTransfer(int& x, int& y) //Actually going to a normal citizen.
 {
 	int temp = x;
 	x = y;
 	y = temp;
 }
 
-void normalTransfer(int x, int y) //What they are transferring and for their eyes
+void normalTransfer(int x, int y) //What they are transferring and for their eyes initially
 {
 	int temp = x;
 	x = y;
@@ -87,84 +207,34 @@ string userChoice() //small function for user input
 	return usersChoice;
 }
 
-void decisionTree()
-{
-	do
-	{
-		system("cls");
-		cout << "Welcome would you like to transfer funds Y/N: ";
-		userChoice();
 
-		if (usersChoice == "Y" || usersChoice == "YES")
-		{
-			cout << "How much would you like to transfer: ";
-			SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 3); //sets color for text only to aqua
-			cin >> terrorAmount; SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 2);			
-			cout << terrorAmount << "\n\n";
-			checkAgain = true;
-			system("pause");
-		}
 
-		else if (usersChoice == "N" || usersChoice == "NO")
-		{
-			do
-			{	
-				cout << "Do you want to check your balance then? Y/N: ";
-				userChoice();
-
-				if (usersChoice == "Y" || usersChoice == "YES" & checkAmount > 0)
-				{
-					hackedTransfer(joesAmount, terrorAmount);
-					cout << "You have " << terrorAmount << " in your account\n";
-					cout << "You might want to add money before your account is closed\n\n";
-					checkAgain = true;
-					system("pause");
-				}
-				
-				else if (usersChoice == "Y" || usersChoice == "YES" & checkAmount == 0)
-				{
-					normalTransfer(joesAmount, terrorAmount);
-					cout << "You have " << terrorAmount << " in your account\n";
-					++checkAmount;
-					checkAgain = true;
-					cout << checkAmount;
-					system("pause");
-				}
-
-				else if (usersChoice == "N" || usersChoice == "NO")
-				{
-					cout << "\nAll right. Have a good day!\n\n";
-					checkAgain = false;
-					system("pause");
-				}
-				else //informs user that their choice was invalid
-				{
-					SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 4); //sets color for text to red
-					cout << "I am sorry I do not understand your command" << endl; SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 2); //resets to green
-					system("pause");
-					checkAgain = true;
-				}
-			} while (checkAgain);
-		}
-
-		else //informs user that their choice was invalid
-		{
-			SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 4); //sets color for text to red
-			cout << "\nI am sorry I do not understand your command" << endl; SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 2); //resets to green
-			system("pause");
-			checkAgain = true;
-		}
-	} while (checkAgain);
-}
 int main()
 {
 	system("color 02");
 	do
 	{
+		//resets values
+		preJoe = 0; 
+		averageJoe = 0;
+		preExec = 0;
+		execAmount = 0;
+		temp1 = 0; //for adding onto existing values
+		counter = 0; //for determining display message
 
 		decisionTree();
-
 		goAgain(); //function run for confirmation on playing again
+
 	} while (playAgain);
+	/*
+	//next bit is for picture purposes
+	cout << "End Results\n";
+	cout << "Before Swap Executive Amount: " << preExec << endl; //amount before the swap
+	cout << "After Swap Executive Amount: " << execAmount << endl; //amount after the swap
+	cout << "Before Swap Normal Citizen: " << preJoe << endl; //amount before the swap
+	cout << "After Swap Normal Citizen: " << preExec << endl; //essentially the same amount after swap with executive
+	cout << "After Swap and attempted transfer Normal Citizen: " << averageJoe << "\n\n"; //amount after swap and attempted transfers
+	system("pause");
+	*/
 	return 0;
 }
